@@ -39,6 +39,7 @@ public class RpcProxyInvocationHandler implements InvocationHandler {
             startUp = true;
         }
 
+        //这传输的数据取决pipeline.addLast(new ObjectEncoder()); 编解码, 比如对象用字符串就不能接收数据
         channelHandlerContext.writeAndFlush(dubboRequest);
         //channelHandlerContext.writeAndFlush("我来了！！！这条消息为什么可以接收？？？？！！！！！");
 
