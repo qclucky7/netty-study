@@ -1,19 +1,28 @@
-package com.netty.study.websocket;
+package com.netty.study.websocket.demo;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
+import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import io.netty.util.ReferenceCountUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.concurrent.*;
 
 /**
  * @author WangChen
@@ -21,9 +30,23 @@ import java.time.LocalDateTime;
  **/
 public class NettyWebSocketServer {
 
+    private static ConcurrentMap<String, ChannelHandlerContext> cacheMap = new ConcurrentHashMap<>();
+
+    private static ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+
+
     public static void main(String[] args) {
+
+        scheduledThreadPool.scheduleAtFixedRate(() -> {
+            for (ChannelHandlerContext channelHandlerContext : cacheMap.values()) {
+                channelHandlerContext.writeAndFlush(new TextWebSocketFrame("推送消息: 服务器消息！ 日期:" + LocalDate.now().toString()));
+            }
+        }, 5, 30, TimeUnit.SECONDS);
+
+
         NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        NioEventLoopGroup workerGroup = new NioEventLoopGroup();
+        NioEventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
+
         try{
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
@@ -41,7 +64,7 @@ public class NettyWebSocketServer {
                              * Http数据在传输过程中是分段的，HttpObjectAggregator可以将多个段聚合
                              * 这就是为什么当浏览器发送大量数据时就会发送多次Http请求
                              */
-                            pipeline.addLast(new HttpObjectAggregator(8192));
+                            pipeline.addLast(new HttpObjectAggregator(65536));
                             /**
                              * 对于websocket数据是以帧（frame）的形式传递
                              * 可以看到WebSocketFrame下面有6个子类
@@ -60,15 +83,54 @@ public class NettyWebSocketServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+
     }
 
-    static class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+    static class WebSocketHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+
+        private WebSocketServerHandshaker webSocketServerHandshaker;
 
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
-            System.out.println("服务器收到消息" + msg.text());
-            //响应
-            ctx.channel().writeAndFlush(new TextWebSocketFrame("服务器时间" + LocalDateTime.now() + msg.text()));
+        protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame msg) throws Exception {
+
+            if (msg instanceof TextWebSocketFrame){
+                TextWebSocketFrame msgs = (TextWebSocketFrame)msg;
+                System.out.println("服务器收到消息" + msgs.text());
+                //响应
+                ctx.channel().writeAndFlush(new TextWebSocketFrame("服务器时间" + LocalDateTime.now() + msgs.text()));
+            }
+
+            if (msg instanceof BinaryWebSocketFrame){
+                BinaryWebSocketFrame bytes = (BinaryWebSocketFrame)msg;
+                ByteBuf content = bytes.content();
+                content.markReaderIndex();
+                int flag = content.readInt();
+                System.out.println("标志位 :" + flag);
+                content.resetReaderIndex();
+//
+//                ByteBuf byteBuf = Unpooled.directBuffer(msg.content().capacity());
+//                byteBuf.writeBytes(msg.content());
+
+                //ctx.writeAndFlush(new BinaryWebSocketFrame(byteBuf));
+
+                //int 4个字节  一个字节占8位   2的32次方
+
+                content = content.skipBytes(content.readInt());
+
+                String path = "D:\\netty-study\\src\\main\\resources\\file\\";
+                //不支持拷贝
+                //Files.write(Paths.get(path + "netty.jpeg"), byteBuf.array());
+                try(FileOutputStream fileOutputStream = new FileOutputStream(new File(path + "netty.jpeg"))){
+                    byte[] bytes1 = new byte[content.readableBytes()];
+                    while (content.isReadable()){
+                        content.readBytes(bytes1);
+                        fileOutputStream.write(bytes1);
+                    }
+                }
+
+
+            }
+
         }
 
         /**
@@ -77,6 +139,7 @@ public class NettyWebSocketServer {
         @Override
         public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
             //id表示唯一的值，LongText是唯一的，ShortText不是唯一的
+            cacheMap.put(ctx.channel().id().asLongText(), ctx);
             System.out.println("handlerAdd被调用" + ctx.channel().id().asLongText());
             System.out.println("handlerAdd被调用" + ctx.channel().id().asShortText());
         }
@@ -90,10 +153,11 @@ public class NettyWebSocketServer {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            System.out.println("异常发生" + cause.getMessage());
             ctx.close();
-
+            cacheMap.remove(ctx.channel().id().asLongText());
+            throw new Exception(cause);
         }
     }
+
 
 }

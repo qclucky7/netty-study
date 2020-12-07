@@ -23,7 +23,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         DubboRequest dubboRequest = (DubboRequest) msg;
 
         // 1. 根据类名返回对象
-        Object target = this.getInstenceByInterfaceClass(dubboRequest.getInterfaceClass());
+        Object target = this.getInstanceByInterfaceClass(dubboRequest.getInterfaceClass());
         // 2. 获取方法名
         String methodName = dubboRequest.getMethodName();
         // 3. 获取方法参数类型
@@ -58,7 +58,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
      * @param clazz
      * @return
      */
-    private Object getInstenceByInterfaceClass(Class<?> clazz) {
+    private Object getInstanceByInterfaceClass(Class<?> clazz) {
         if (IUserFacade.class.equals(clazz)) {
             return new UserFacade();
         }

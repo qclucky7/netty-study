@@ -9,7 +9,15 @@
     <textarea name="message" style="height:300px; width: 300px"></textarea>
     <input type="button" value="发送消息" onclick="send(this.form.message.value)">
     <textarea id="responseText" style="height:300px; width: 300px"></textarea>
+
     <input type="button" value="清空内容" onclick="document.getElementById('responseText').value=''">
+
+    <div style="width: 600px;height: 400px;">
+        <p>
+            <textarea id="inp-msg" style="height: 50px;width: 500px"></textarea><input type="button" value="发送" id="send"><br/>
+            选择图片： <input type="file" id="send-pic">
+        </p>
+    </div>
 </form>
 </body>
 <script>
@@ -47,5 +55,36 @@
             alert("连接没有开启")
         }
     }
+
+    // 发送图片
+    document.querySelector('#send-pic').addEventListener('change', function (ev) {
+        var files = this.files;
+        if (files && files.length) {
+            var file = files[0];
+            var fileType = file.type;
+            // 表示传递的是 非图片
+            var dataType = 20;
+            if (!/^image/.test(fileType)) {
+                // 表示传递的是 图片
+                dataType = 10;
+                return;
+            }
+            var fileReader = new FileReader();
+            fileReader.readAsArrayBuffer(file);
+            fileReader.onload = function (e) {
+                // 获取到文件对象
+                var result = e.target.result;
+                // 创建一个 4个 字节的数组缓冲区
+                var arrayBuffer = new ArrayBuffer(4);
+                var dataView = new DataView(arrayBuffer);
+                // 从第0个字节开始，写一个 int 类型的数据(dataType)，占4个字节
+                dataView.setInt32(0, dataType);
+                // 组装成 blob 对象
+                var blob = new Blob([arrayBuffer, result]);
+                // 发送到 webSocket 服务器端
+                socket.send(blob);
+            }
+        }
+    }, false);
 </script>
 </html>

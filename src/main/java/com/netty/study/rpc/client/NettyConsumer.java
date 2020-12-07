@@ -5,6 +5,9 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
@@ -14,18 +17,7 @@ import io.netty.handler.codec.string.StringEncoder;
  **/
 public class NettyConsumer {
 
-    public static void startServer(String hostName) {
-        startClient(hostName, 8080);
-    }
-
-    public static void startClient(String hostName, int port) {
-        startClient0(hostName, port);
-    }
-
-    private static void startClient0(String hostName, int port) {
 
 
-
-    }
 
 }
