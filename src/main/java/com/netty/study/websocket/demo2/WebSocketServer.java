@@ -31,9 +31,18 @@ public class WebSocketServer {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<Channel>() {
 
+//                SSLContext sslContext = SslUtils.createSslContext("JKS","","netty"); ///SslUtil自定义类
+//                SSLEngine sslEngine = sslContext.createSSLEngine();
+
                 @Override
                 protected void initChannel(Channel channel) throws Exception {
+
                     ChannelPipeline pipeline = channel.pipeline();
+
+//                    sslEngine.setUseClientMode(false);
+//                    sslEngine.setNeedClientAuth(false);
+//                    pipeline.addFirst(new SslHandler(sslEngine));
+
                     pipeline.addLast("http-codec", new HttpServerCodec()); // Http消息编码解码
                     pipeline.addLast("aggregator", new HttpObjectAggregator(65536)); // Http消息组装
                     pipeline.addLast("http-chunked", new ChunkedWriteHandler()); // WebSocket通信支持

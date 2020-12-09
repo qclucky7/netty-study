@@ -6,11 +6,16 @@
 </head>
 <body>
 <form onsubmit="return false">
-    <textarea name="message" style="height:300px; width: 300px"></textarea>
-    <input type="button" value="发送消息" onclick="send(this.form.message.value)">
+
+    <textarea id="message" style="height:300px; width: 300px"></textarea>
+
+    <input type="button" value="发送消息" onclick="sendMessage(this.form.message.value)">
+
     <textarea id="responseText" style="height:300px; width: 300px"></textarea>
 
     <input type="button" value="清空内容" onclick="document.getElementById('responseText').value=''">
+
+    <button id="key" onclick="sendHttp()">发送http请求</button>
 
     <div style="width: 600px;height: 400px;">
         <p>
@@ -20,11 +25,27 @@
     </div>
 </form>
 </body>
+<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
 <script>
 
+    function sendHttp(){
+        // $.ajax({
+        //     url: "http://localhost:7000",
+        //     data: {},
+        //     type: "GET",
+        //     dataType: "json",
+        //     headers:{
+        //     }
+        //     success: function(data) {
+        //         console.log(data)
+        //     }
+        // });
+    };
+
     var socket;
+
     if(window.WebSocket){
-        socket = new WebSocket("ws://localhost:7000/hello");
+        socket = new WebSocket("ws://localhost:7000?token=123456");
         //这个方法相当于channel中read方法收到服务器端会送的消息
         socket.onmessage = function (msg) {
             var rt = document.getElementById("responseText");
@@ -44,13 +65,15 @@
         alert("不支持websocket")
     }
 
-    function send(message) {
+    function sendMessage(message) {
         if(!window.socket){//先判断websocket是否创建好
             return
         }
         if(socket.readyState == WebSocket.OPEN){
             //通过socket发送消息
-            socket.send(message);
+            for (i=0; i< 50; i++){
+                socket.send(message + i);
+            }
         }else{
             alert("连接没有开启")
         }
