@@ -31,6 +31,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
             System.out.println("进http请求了!!");
             handleHttpRequest(ctx, (FullHttpRequest) msg);
         } else {
+            //责任链模式 和过滤器拦截器实现一致
             ctx.fireChannelRead(((WebSocketFrame) msg).retain());
         }
 
