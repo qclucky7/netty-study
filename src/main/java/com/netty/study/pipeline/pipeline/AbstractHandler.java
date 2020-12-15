@@ -9,8 +9,9 @@ import java.util.*;
  * @author WangChen
  * @since 2020-12-10 10:25
  **/
-public abstract class AbstractHandler implements Handler{
+public abstract class AbstractHandler implements Handler, Comparator<AbstractHandler>{
 
+    private int order;
     private final boolean inbound;
     private final boolean outbound;
     volatile AbstractHandler next;
@@ -21,6 +22,7 @@ public abstract class AbstractHandler implements Handler{
         this.inbound = inbound;
         this.outbound = outbound;
         this.monitors = new ArrayList<>();
+        order = 0;
     }
 
     public AbstractHandler(boolean inbound, boolean outbound, Monitor... monitor) {
@@ -59,10 +61,6 @@ public abstract class AbstractHandler implements Handler{
         handler.fireInboundHandler(msg);
     }
 
-    private void fireInboundHandler(Object msg){
-        invokeInbound(findContextInbound(), msg);
-    }
-
 
     static void invokeOutbound(AbstractHandler handler, Object msg){
         if (handler == null){
@@ -72,6 +70,18 @@ public abstract class AbstractHandler implements Handler{
         handler.fireOutboundHandler(msg);
     }
 
+    /**
+     * 执行下一个节点
+     * @param msg
+     */
+    private void fireInboundHandler(Object msg){
+        invokeInbound(findContextInbound(), msg);
+    }
+
+    /**
+     * 执行上一个节点
+     * @param msg
+     */
     private void fireOutboundHandler(Object msg){
         invokeOutbound(findContextOutbound(), msg);
     }
@@ -101,9 +111,14 @@ public abstract class AbstractHandler implements Handler{
         return ctx;
     }
 
-    public AbstractHandler registerListen(Monitor ... monitor){
+    public AbstractHandler registerListener(Monitor ... monitor){
         monitors.addAll(Arrays.asList(monitor));
         return this;
+    }
+
+    @Override
+    public int compare(AbstractHandler o1, AbstractHandler o2) {
+        return o1.order - o2.order;
     }
 
     abstract void invoke0(Object msg);

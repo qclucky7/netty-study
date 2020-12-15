@@ -15,8 +15,6 @@
 
     <input type="button" value="清空内容" onclick="document.getElementById('responseText').value=''">
 
-    <button id="key" onclick="sendHttp()">发送http请求</button>
-
     <div style="width: 600px;height: 400px;">
         <p>
             <textarea id="inp-msg" style="height: 50px;width: 500px"></textarea><input type="button" value="发送" id="send"><br/>
@@ -28,24 +26,10 @@
 <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
 <script>
 
-    function sendHttp(){
-        // $.ajax({
-        //     url: "http://localhost:7000",
-        //     data: {},
-        //     type: "GET",
-        //     dataType: "json",
-        //     headers:{
-        //     }
-        //     success: function(data) {
-        //         console.log(data)
-        //     }
-        // });
-    };
-
     var socket;
 
     if(window.WebSocket){
-        socket = new WebSocket("ws://localhost:7000?token=123456");
+        socket = new WebSocket("ws://localhost:7000?token=77777");
         //这个方法相当于channel中read方法收到服务器端会送的消息
         socket.onmessage = function (msg) {
             var rt = document.getElementById("responseText");

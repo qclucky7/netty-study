@@ -51,7 +51,7 @@ public class NettyWebSocketServer implements InitializingBean, DisposableBean {
             bossGroup = new NioEventLoopGroup(1);
             workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
 
-            log.info("NettyWebSocketServer staring");
+            log.info("NettyWebSocketServer staring....");
 
             /**
              * option 针对bossGroup

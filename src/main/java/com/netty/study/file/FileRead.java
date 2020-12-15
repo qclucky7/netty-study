@@ -21,6 +21,7 @@ public class FileRead {
         List<String> collect = Files.lines(Paths.get("D:\\netty-study\\src\\main\\resources\\file\\protocol"), StandardCharsets.UTF_8)
                 .collect(Collectors.toList());
 
+
         System.out.println(collect.toString());
 
     }
@@ -36,4 +37,6 @@ public class FileRead {
         System.out.println(s);
 
     }
+
+
 }
