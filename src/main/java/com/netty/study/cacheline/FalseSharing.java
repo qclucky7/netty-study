@@ -10,9 +10,9 @@ public class FalseSharing implements Runnable{
     public final static long ITERATIONS = 500L * 1000L * 100L;
     private int arrayIndex = 0;
 
-    //private static ValuePadding[] longs;
+    private static ValuePadding[] longs;
     //private static ValueNoPadding[] longs;
-    private static ValuePaddingJDK8[] longs;
+    //private static ValuePaddingJDK8[] longs;
     public FalseSharing(final int arrayIndex) {
         this.arrayIndex = arrayIndex;
     }
@@ -29,13 +29,13 @@ public class FalseSharing implements Runnable{
 
     private static void runTest(int NUM_THREADS) throws InterruptedException {
         Thread[] threads = new Thread[NUM_THREADS];
-        //longs = new ValuePadding[NUM_THREADS];
+        longs = new ValuePadding[NUM_THREADS];
         //longs = new ValueNoPadding[NUM_THREADS];
-        longs = new ValuePaddingJDK8[NUM_THREADS];
+        //longs = new ValuePaddingJDK8[NUM_THREADS];
         for (int i = 0; i < longs.length; i++) {
-            //longs[i] = new ValuePadding();
+            longs[i] = new ValuePadding();
             //longs[i] = new ValueNoPadding();
-            longs[i] = new ValuePaddingJDK8();
+            //longs[i] = new ValuePaddingJDK8();
         }
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread(new FalseSharing(i));
@@ -62,7 +62,7 @@ public class FalseSharing implements Runnable{
         protected long p1, p2, p3, p4, p5, p6, p7;
         protected volatile long value = 0L;
         protected long p9, p10, p11, p12, p13, p14;
-        protected long p15;
+        //protected long p15;
     }
     public final static class ValueNoPadding {
         // protected long p1, p2, p3, p4, p5, p6, p7;

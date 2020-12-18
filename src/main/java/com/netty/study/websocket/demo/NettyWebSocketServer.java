@@ -81,7 +81,6 @@ public class NettyWebSocketServer {
                              */
                             pipeline.addLast(new WebSocketHandler());
                             pipeline.addLast(new WebSocketServerProtocolHandler("/hello"));
-
                         }
                     });
             ChannelFuture future = bootstrap.bind(7000).sync();

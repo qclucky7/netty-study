@@ -1,5 +1,7 @@
 package com.netty.study.loadbalance.loadbalance;
 
+import org.springframework.util.CollectionUtils;
+
 import java.util.List;
 
 /**
@@ -8,9 +10,21 @@ import java.util.List;
  **/
 public class SimpleRoundRobinLoadBalance extends AbstractLoadBalance{
 
+    private int index = 0;
+    private final Object lock = new Object();
+
     @Override
     protected Invoker doSelect(List<Invoker> invokers) {
-        return null;
+
+        synchronized (lock){
+            if (index == invokers.size()){
+                index = 0;
+            }
+            Invoker invoker = invokers.get(index);
+            index++;
+            return invoker;
+        }
+
     }
 
 }

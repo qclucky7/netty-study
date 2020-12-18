@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author WangChen
  * @since 2020-12-11 14:27
  **/
-public class SmoothRoundRobinLoadBalance extends AbstractLoadBalance{
+public class SmoothWeightedRoundRobinLoadBalance extends AbstractLoadBalance{
 
     private static ConcurrentMap<String, ServerNode> map = new ConcurrentHashMap<>();
 
