@@ -1,7 +1,5 @@
 package com.netty.study.loadbalance.loadbalance;
 
-import org.springframework.util.CollectionUtils;
-
 import java.util.List;
 
 /**

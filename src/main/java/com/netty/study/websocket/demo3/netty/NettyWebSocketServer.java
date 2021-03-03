@@ -9,6 +9,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
@@ -83,22 +85,25 @@ public class NettyWebSocketServer implements InitializingBean, DisposableBean {
                                  */
                                 pipeline.addLast(new IdleStateHandler(60,60,30));
                                 //第一次握手请求时由Http协议承载，使用Http的编码器和解码器
-                                pipeline.addLast(new HttpServerCodec());
+                                //pipeline.addLast(new HttpServerCodec());
                                 /**
                                  * Http数据在传输过程中是分段的，HttpObjectAggregator可以将多个段聚合
                                  * 这就是为什么当浏览器发送大量数据时就会发送多次Http请求
                                  */
-                                pipeline.addLast(new HttpObjectAggregator(1024 * 1024));
+                                //pipeline.addLast(new HttpObjectAggregator(1024 * 1024));
                                 //是以块方式写，支持异步发送大的码流（如大文件的传输），但不占用过多的内存
+                                pipeline.addLast(new StringEncoder());
+                                pipeline.addLast(new StringDecoder());
                                 pipeline.addLast(new ChunkedWriteHandler());
-                                pipeline.addLast(new HttpHandler());
+                                pipeline.addLast(new TcpHandler());
+                                //pipeline.addLast(new HttpHandler());
                                 /**
                                  * 对于websocket数据是以帧（frame）的形式传递
                                  * 可以看到WebSocketFrame下面有6个子类
                                  * 浏览器请求时:ws://localhost:7000/hello 表示请求的uri，（与页面中websocket中url一样）
                                  * WebSocketServerProtocolHandler的核心功能是将Http协议升级成ws协议（是通过状态码101），保持长连接
                                  */
-                                pipeline.addLast(new WebSocketHandler());
+                                //pipeline.addLast(new WebSocketHandler());
                                 //pipeline.addLast(new WebSocketServerProtocolHandler("/hello"));
 
                             }
